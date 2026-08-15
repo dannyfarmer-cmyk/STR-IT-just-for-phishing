@@ -26,25 +26,16 @@
        chrome; index.css now only holds homepage-specific sections. -->
   <link rel="stylesheet" href="theme.css" />
   <link rel="stylesheet" href="index.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <!-- Self-hosted latin subset; see tools/fetch-fonts.mjs. Keeps Google out
+       of the CSP and off every visitor's connection. -->
+  <link rel="preload" href="assets/fonts/dm-sans-normal-aa530716.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="assets/fonts.css" />
   <script src="assets/icons.js" defer></script>
   <!-- Google Analytics (GA4).
        Denied by default. consent.js issues the config call — the one that
        starts collection and sets cookies — only after the visitor agrees. -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y3ZYDHQD6Z"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('consent', 'default', {
-      analytics_storage: 'denied',
-      ad_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied'
-    });
-    gtag('js', new Date());
-  </script>
+  <script src="analytics-init.js"></script>
 
   <script type="application/ld+json">
   {
@@ -662,71 +653,10 @@
        script the other 15 pages use. This page used to carry its own copy. -->
   <script src="theme.js"></script>
 
-  <script>
-    // ================================================
-    // SCROLL-REVEAL — INTERSECTION OBSERVER
-    // ================================================
-    const revealObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-
-    document.querySelectorAll('.reveal').forEach(el => {
-      revealObserver.observe(el);
-    });
-
-    // ================================================
-    // STAT COUNTER ANIMATION
-    // ================================================
-    function animateCounter(el) {
-      const target = parseInt(el.dataset.target, 10);
-      const suffix = el.dataset.suffix || '';
-      const isZero = el.dataset.zero === 'true';
-
-      if (isZero) {
-        el.textContent = '0';
-        return;
-      }
-
-      const duration = 1400;
-      const startTime = performance.now();
-
-      function step(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        // Ease out cubic
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const current = Math.round(eased * target);
-        el.textContent = current + suffix;
-        if (progress < 1) {
-          requestAnimationFrame(step);
-        }
-      }
-
-      requestAnimationFrame(step);
-    }
-
-    const statsObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.querySelectorAll('.stat-number').forEach(animateCounter);
-          statsObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.4 });
-
-    const statsSection = document.getElementById('stats');
-    if (statsSection) statsObserver.observe(statsSection);
-
-  </script>
-
+  <script src="index.js"></script>
   <script src="progress.js"></script>
   <script src="a11y.js"></script>
   <script src="consent.js"></script>
   <script src="analytics.js"></script>
-  <script>document.addEventListener('DOMContentLoaded', function(){ if(typeof lucide !== 'undefined') lucide.createIcons(); });</script>
 </body>
 </html>

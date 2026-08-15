@@ -1,6 +1,22 @@
 name            = "jfp-subscribe"
 main            = "worker.js"
-compatibility_date = "2025-01-01"
+# Was 2025-01-01 locally while the deployed Worker was on 2026-05-24, so every
+# deploy from this file silently rolled the runtime back a year. Kept in step
+# with the deployed value.
+compatibility_date = "2026-05-24"
+
+# Both of these were enabled on the deployed Worker but absent here, so a
+# deploy turned them off. Observability is how the console.error/warn calls in
+# worker.js — rejected Turnstile tokens, Brevo failures — are actually visible.
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+
+# This is an API endpoint, not a site. Preview URLs would publish it on extra
+# hostnames for no benefit.
+preview_urls = false
 
 # After deploying, add your Brevo key as a secret (never stored here):
 #   wrangler secret put BREVO_API_KEY
@@ -31,3 +47,27 @@ simple        = { limit = 10, period = 60 }
 # pick an origin that passes.
 # [vars]
 # ALLOW_DEV_ORIGINS = "true"
+
+# Secrets to set after deploying (never in this file):
+#   wrangler secret put BREVO_API_KEY
+#   wrangler secret put TURNSTILE_SECRET          # enables the challenge
+#
+# Plain vars, safe to keep here:
+#   BREVO_DOI_TEMPLATE_ID  numeric id of the Brevo double-opt-in template.
+#                          Set it and the Worker switches to confirmed opt-in;
+#                          leave it unset and contacts are added directly.
+#   BREVO_DOI_REDIRECT     where Brevo sends people after they confirm.
+#
+# [vars]
+# BREVO_DOI_TEMPLATE_ID = "0"
+# BREVO_DOI_REDIRECT    = "https://justforphishing.com/"
+
+# Frontend hostnames this deployment will accept Turnstile tokens from.
+# Required once TURNSTILE_SECRET is set.
+#
+# The widget is registered for justforphishing.com, localhost and 127.0.0.1.
+# Only the production hostname belongs here: a locally served page must not be
+# able to mint tokens this deployment accepts. www is deliberately absent too —
+# it 301s to the apex, so no token is ever minted on it.
+[vars]
+TURNSTILE_HOSTNAMES = "justforphishing.com"
