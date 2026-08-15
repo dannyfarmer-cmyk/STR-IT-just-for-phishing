@@ -177,6 +177,33 @@
 
     <section class="org-section alt">
       <div class="org-section-inner">
+        <span class="section-kicker">Enterprise tracking</span>
+        <h2>Microsoft 365 SSO and user-level completion logging for internal training.</h2>
+        <p class="section-lede">For organisations that need audits, sign-in controls, and a record of who completed which module, the public site can be extended to an Entra ID-backed deployment that logs completions to a secure backend. The public version remains anonymous by default; the enterprise version adds identity checks and stored training records.</p>
+        <div class="enterprise-panel">
+          <div>
+            <h3>Enterprise flow</h3>
+            <ul class="org-list">
+              <li>Users sign in with Microsoft 365 / Entra ID before access is granted.</li>
+              <li>Module completion records are sent with the user email, module name, score, and completed timestamp.</li>
+              <li>Admin dashboards can report completion by user, department, or training cohort.</li>
+              <li>Self-hosted deployments can keep the public site free while the internal enterprise copy adds identity-based tracking.</li>
+            </ul>
+          </div>
+          <div class="code-box" aria-label="Example Enterprise config">
+            <span>Example config</span>
+            <pre>window.JFPEnterprise = {
+  enabled: true,
+  requiredSSO: true,
+  apiUrl: 'https://api.example.com/training-log'
+};</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="org-section">
+      <div class="org-section-inner">
         <span class="section-kicker">Self-hosting</span>
         <h2>Fork it, brand it, and make the scenarios match your real threat model.</h2>
         <p class="section-lede">Because Just For Phishing is a static, open-source site, an organization can host a customized copy with GitHub Pages, Cloudflare Pages, Netlify, an internal web server, or another static host.</p>

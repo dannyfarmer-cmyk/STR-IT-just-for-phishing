@@ -306,6 +306,55 @@
       line-height: 1.7;
     }
 
+    .enterprise-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(250px, 0.95fr);
+      gap: 22px;
+      align-items: stretch;
+      margin-top: 28px;
+      padding: clamp(22px, 4vw, 30px);
+      border: 1px solid rgba(34,211,238,.2);
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(34,211,238,.08), rgba(168,85,247,.06));
+    }
+
+    .enterprise-panel h3 {
+      margin: 0 0 18px;
+      color: var(--text-primary);
+      font-size: 24px;
+      font-family: var(--font-display);
+      font-weight: 400;
+    }
+
+    .code-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(4, 12, 20, 0.88);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 18px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      overflow: hidden;
+    }
+
+    .code-box span {
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--cyan-bright);
+    }
+
+    .code-box pre {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      color: #d8f6ff;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
     @media (max-width: 860px) {
       .org-hero-grid,
       .support-panel {

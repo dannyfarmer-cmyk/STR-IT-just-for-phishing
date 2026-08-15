@@ -971,10 +971,6 @@
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .signup-form {
-        flex-direction: column;
-      }
-
       .enterprise-card {
         padding: 32px 24px;
       }

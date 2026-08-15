@@ -82,3 +82,165 @@
     }
   });
 })();
+
+// Optional enterprise training features for Microsoft 365-backed deployments.
+// The public site stays anonymous by default. An organization can opt in by
+// setting window.JFPEnterprise = { apiUrl: 'https://...', requiredSSO: true }.
+(function () {
+  'use strict';
+
+  var PROGRESS_KEY = 'phishing-training-progress';
+  var IDENTITY_KEY = 'jfp-enterprise-identity';
+  var LOG_KEY = 'jfp-enterprise-log-state';
+
+  function safeJsonParse(raw, fallback) {
+    if (!raw) return fallback;
+    try {
+      return JSON.parse(raw);
+    } catch (_error) {
+      return fallback;
+    }
+  }
+
+  function getProgress() {
+    return safeJsonParse(localStorage.getItem(PROGRESS_KEY), {});
+  }
+
+  function getIdentity() {
+    return safeJsonParse(localStorage.getItem(IDENTITY_KEY), null);
+  }
+
+  function setIdentity(identity) {
+    if (!identity || !identity.email) return;
+    localStorage.setItem(IDENTITY_KEY, JSON.stringify(identity));
+  }
+
+  function clearIdentity() {
+    localStorage.removeItem(IDENTITY_KEY);
+  }
+
+  function getLoggedModules() {
+    return safeJsonParse(localStorage.getItem(LOG_KEY), {});
+  }
+
+  function setLoggedModules(data) {
+    localStorage.setItem(LOG_KEY, JSON.stringify(data));
+  }
+
+  function buildIdentityPayload(identity) {
+    if (!identity) return null;
+    return {
+      email: identity.email || '',
+      name: identity.name || '',
+      tenantId: identity.tenantId || '',
+      objectId: identity.objectId || '',
+      authProvider: identity.authProvider || 'microsoft-365'
+    };
+  }
+
+  function buildTrainingEvent(moduleName, entry) {
+    var user = getIdentity();
+    var payload = {
+      eventType: 'training_completion',
+      moduleName: moduleName,
+      score: Number(entry.score) || 0,
+      total: Number(entry.total) || 0,
+      percentage: Number(entry.percentage) || 0,
+      completedAt: entry.completedAt || new Date().toISOString(),
+      source: 'just-for-phishing',
+      user: buildIdentityPayload(user)
+    };
+    if (!payload.user) {
+      payload.user = null;
+    }
+    return payload;
+  }
+
+  function sendTrainingEvent(event) {
+    var config = window.JFPEnterprise || {};
+    var apiUrl = config.apiUrl;
+    if (!apiUrl || !config.enabled && !config.apiUrl) return Promise.resolve();
+
+    return fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(event)
+    }).catch(function () {
+      // Best effort only: keep the public site working even if backend logging is
+      // not available or the user is not signed in to the enterprise flow.
+    });
+  }
+
+  function flushCompletedProgress() {
+    var config = window.JFPEnterprise || {};
+    if (!config.apiUrl && !config.enabled) return;
+
+    var progress = getProgress();
+    var logged = getLoggedModules();
+
+    Object.keys(progress).forEach(function (moduleName) {
+      var entry = progress[moduleName];
+      if (!entry || !entry.completed || !entry.completedAt) return;
+      var marker = entry.completedAt;
+      if (logged[moduleName] === marker) return;
+
+      var event = buildTrainingEvent(moduleName, entry);
+      var user = getIdentity();
+      if (config.requiredSSO && !user) {
+        logged[moduleName] = marker;
+        setLoggedModules(logged);
+        return;
+      }
+
+      sendTrainingEvent(event).then(function () {
+        logged[moduleName] = marker;
+        setLoggedModules(logged);
+      });
+    });
+  }
+
+  function readMicrosoftIdentityFromQuery() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var email = params.get('userEmail');
+      var name = params.get('userName');
+      var tenantId = params.get('tenantId');
+      var objectId = params.get('objectId');
+      if (!email) return null;
+      return {
+        email: email,
+        name: name || email,
+        tenantId: tenantId || '',
+        objectId: objectId || '',
+        authProvider: 'microsoft-365'
+      };
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function initialiseEnterpriseTracking() {
+    var identity = getIdentity() || readMicrosoftIdentityFromQuery();
+    if (identity) setIdentity(identity);
+    flushCompletedProgress();
+  }
+
+  window.JFPTrainingAuth = window.JFPTrainingAuth || {
+    setIdentity: setIdentity,
+    clearIdentity: clearIdentity,
+    getIdentity: getIdentity,
+    readMicrosoftIdentityFromQuery: readMicrosoftIdentityFromQuery,
+    flushCompletedProgress: flushCompletedProgress
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialiseEnterpriseTracking);
+  } else {
+    initialiseEnterpriseTracking();
+  }
+
+  window.addEventListener('storage', function (event) {
+    if (event.key !== PROGRESS_KEY) return;
+    flushCompletedProgress();
+  });
+})();

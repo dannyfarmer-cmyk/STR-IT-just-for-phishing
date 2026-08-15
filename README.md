@@ -178,6 +178,20 @@ python3 -m http.server 8080
 4. **Brand** with your logo in `assets/` (optional)
 5. **Launch** and track completion
 
+### Enterprise SSO + Training Logs
+
+For Microsoft 365-backed deployments, set:
+
+```js
+window.JFPEnterprise = {
+  enabled: true,
+  requiredSSO: true,
+  apiUrl: 'https://api.example.com/training-log'
+};
+```
+
+This keeps the public site anonymous by default, but enables an organization-specific version that requires Entra ID sign-in and sends module-completion events to a secure backend for user-level reporting.
+
 **No backend required. Training progress remains local to the browser.**
 
 ---
