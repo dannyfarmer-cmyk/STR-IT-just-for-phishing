@@ -341,9 +341,13 @@ footer {
 
 .footer-top {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 48px;
   margin-bottom: 56px;
+}
+
+.footer-col {
+  display: none;
 }
 
 .footer-brand {
